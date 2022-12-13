@@ -1,27 +1,26 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <title>Scoped CSS Variables and JS</title>
-</head>
-<body>
-  <h2>Update CSS Variables with <span class='hl'>JS</span></h2>
+  <style type="text/css">
+  :root {
+        --base: #FFC600;
+        --spacing: 10px;
+        --blur: 10px;
+    }
 
-  <div class="controls">
-    <label for="spacing">Spacing:</label>
-    <input id="spacing" type="range" name="spacing" min="10" max="200" value="10" data-sizing="px">
+    img {
+        padding: var(--spacing);
+        background: var(--base);
+        filter: blur(var(--blur));
+    }
 
-    <label for="blur">Blur:</label>
-    <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
-
-    <label for="base">Base Color</label>
-    <input id="base" type="color" name="base" value="#ffc600">
-  </div>
-
-  <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
-
-  <style>
-
+    .hl {
+        color: var(--base);
+    }
     /*
       misc styles, nothing to do with CSS variables
     */
@@ -43,9 +42,71 @@
       width: 100px;
     }
   </style>
+</head>
 
-  <script>
+<body>
+  <h2>Update CSS Variables with <span class='hl'>JS</span></h2>
+
+  <div class="controls">
+    <label for="spacing">Spacing:</label>
+    <input id="spacing" type="range" name="spacing" min="10" max="200" value="10" data-sizing="px">
+
+    <label for="blur">Blur:</label>
+    <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
+
+    <label for="base">Base Color</label>
+    <input id="base" type="color" name="base" value="#ffc600">
+  </div>
+
+  <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
+
+  <script type="text/javascript">
+    // These {property}Name variables refer to their corresponding CSS variables and HTML input ids
+    const spacingName = "spacing";
+    const blurName = "blur";
+    const colorName = "base";
+    
+    function handleInputUpdate(event) {
+        const input = this;
+      
+        switch (input.id) {
+            case spacingName:
+                updateSpacing(input.value, input.dataset.sizing);
+                break;
+            case blurName:
+                updateBlur(input.value, input.dataset.sizing);
+                break;
+            case colorName:
+                updateColor(input.value);
+                break;
+        }
+    }
+
+    function updateSpacing(spacing, unit) {
+        mutateDocument(`--${spacingName}`, `${spacing}${unit}`);
+    }
+
+    function updateBlur(radius, unit) {
+        mutateDocument(`--${blurName}`, `${radius}${unit}`);
+    }
+
+    function updateColor(color) {
+        mutateDocument(`--${colorName}`, `${color}`)
+    }
+
+
+    function mutateDocument(styleProperty, value) {
+        document.documentElement.style.setProperty(styleProperty, value);
+    }
+    
+    function addListener(event, callback, elements) {
+        elements.map((el) => el.addEventListener(event, callback)); 
+    }
+
+    const inputs = Array.from(document.querySelectorAll(".controls input"));
+    const eventsToListen = ["change", "mousemove"];
+
+    eventsToListen.map((event) => addListener(event, handleInputUpdate, inputs))
   </script>
-
 </body>
 </html>
