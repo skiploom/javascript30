@@ -15,8 +15,64 @@
     </ul>
   </form>
 <script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  function fetchCities(endpoint) {
+      let cities = [];
+      
+      fetch(endpoint)
+          .then(blob => blob.json())
+          .then(data => cities.push(...data))
 
+      return cities;
+  }
+  
+  function findMatches(wordToMatch, cities) {
+      return cities.filter(place => doesPlaceMatch(wordToMatch, place));
+  }
+
+  function doesPlaceMatch(wordToMatch, place) {
+      const pattern = new RegExp(wordToMatch, "gi");
+      return place.city.match(pattern) || place.state.match(pattern);
+  }
+
+  function displayMatches(event, cities, suggestionsElement) {
+      const searchInputValue = event.target.value;
+      const matches = findMatches(searchInput.value, cities);
+      const placesHtml = matches.map(place => buildPlaceHtml(place, searchInputValue)).join("");
+
+      mutateSuggestionsElement(suggestionsElement, placesHtml);
+  }
+
+  function buildPlaceHtml(place, inputValue) {
+      const highlightPattern = new RegExp(inputValue, "gi");
+      const cityNameHtml = place.city.replace(highlightPattern, `<span class="hl">${inputValue}</span>`);
+      const stateNameHtml = place.state.replace(highlightPattern, `<span class="hl">${inputValue}</span>`);
+      const population = intersperseCommas(place.population);
+      
+      const placeHtml =
+            `<li>
+              <span class="name">${cityNameHtml}, ${stateNameHtml}</span>
+              <span class="population">${population}</span>
+            </li>`
+      
+      return placeHtml;
+  }
+
+  function mutateSuggestionsElement(element, innerHtml) {
+      element.innerHTML = innerHtml;
+  }
+  
+  function intersperseCommas(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  const cities = fetchCities(endpoint);
+  
+  const searchInput = document.querySelector(".search");
+  const suggestions = document.querySelector(".suggestions");
+  const searchEvents = ["change", "keyup"];
+
+  searchEvents.map(event => searchInput.addEventListener(event, (e) => {displayMatches(e, cities, suggestions)}));
 </script>
 </body>
 </html>
