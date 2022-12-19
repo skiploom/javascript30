@@ -1,11 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <title>Console Tricks!</title>
 </head>
-<body>
 
+<body>
   <p onClick="makeGreen()">×BREAK×DOWN×</p>
 
   <script>
@@ -18,29 +20,92 @@
     }
 
     // Regular
+    console.log("A regular log.");
 
     // Interpolated
+    console.log("An interpolated %s.", "log");
+
+    const log = "log";
+    console.log(`An ES6 interpolated ${log}.`);
 
     // Styled
+    console.log("%c This is a stylish log.", "font-size: 20px; background: red; text-shadow: 10px 10px 0 blue;");
 
     // warning!
+    console.warn("This is a warning, brah.");
 
     // Error :|
+    console.error("A bad thing happened.");
 
     // Info
+    console.info("Crocodiles eat 3-4 people per year.");
 
     // Testing
+    const p = document.querySelector("p");
+    console.assert(p.classList.contains("ouch"), "That's not the right element.");
 
     // clearing
-
+    console.clear();
+    
     // Viewing DOM Elements
+    console.log(p);
+    console.dir(p);
 
+    console.clear();
+    
     // Grouping together
+    dogs.forEach(dog => {
+        console.group(`${dog.name}`);
+        
+        console.log(`This is ${dog.name}.`);
+        console.log(`${dog.name} is ${dog.age} years old.`);
+        console.log(`${dog.name} is ${dog.age * 7} dog years old.`);
+
+        console.groupEnd(`${dog.name}`);
+    });
+
+    dogs.forEach(dog => {
+        console.groupCollapsed(`${dog.name}`);
+        
+        console.log(`This is ${dog.name}.`);
+        console.log(`${dog.name} is ${dog.age} years old.`);
+        console.log(`${dog.name} is ${dog.age * 7} dog years old.`);
+
+        console.groupEnd(`${dog.name}`);
+    });
 
     // counting
+    console.count("foo");
+    console.count("foo");
+    console.count("foo");
+    console.count("bar");
+    console.count("foo");
+    console.count("foo");
+    console.count("foo");
+    console.count("bar");
+    console.count("foo");
+    console.count("bar");
+    console.count("foo");
+    console.count("bar");
+    console.count("foo");
+    console.count("bar");
+    console.count("bar");
+    console.count("bar");
+    console.count("foo");
+    console.count("foo");
 
     // timing
+    const timerLabel = "Fetching data.";
 
+    console.time(timerLabel);
+    fetch("https://api.github.com/users/skiploom")
+      .then(data => data.json())
+      .then(json => {
+        console.timeEnd(timerLabel);
+        console.log(json);
+      });
+
+    console.table(dogs);
   </script>
 </body>
 </html>
