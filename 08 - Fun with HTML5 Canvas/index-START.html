@@ -7,6 +7,98 @@
 <body>
 <canvas id="draw" width="800" height="800"></canvas>
 <script>
+  function initCanvasAndContext(element, width, height) {
+      const canvas = element;
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      ctx.strokeStyle = "#BADA55";
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.lineWidth = 100;
+
+      return [canvas, ctx];
+  }
+
+  // The name `Model` comes from [Elm](https://guide.elm-lang.org/architecture/),
+  // and is used here to capture the state of some of the changing data,
+  // excluding what is stored in the `canvas` element and its corresponding `context`.
+  function initModel() {
+      const model = new Map();
+
+      model.set("isDrawing", false);
+      model.set("lastXAndY", [0,0]);
+      model.set("hue", 0);
+      model.set("direction", true);
+
+      return model;
+  }
+
+  // Model setter functions
+  function enableDrawing(model) {
+      return function(event) {
+        model.set("isDrawing", true);
+        setLastXAndY(model, [event.offsetX, event.offsetY]);
+      }
+  }
+
+  function disableDrawing(model) {
+      model.set("isDrawing", false);
+  }
+
+  function setLastXAndY(model, xy) {
+      model.set("lastXAndY", xy);
+  }
+
+  function incrementHue(model) {
+      const hue = model.get("hue");
+      const newHue = (hue > 360) ? 0 : hue + 1;
+      
+      model.set("hue", newHue);
+  }
+
+  function toggleDirection(model, ctx) {
+      const direction = model.get("direction");
+      const newDirection = (ctx.lineWidth > 100 || ctx.lineWidth <= 1) ? !direction : direction;
+
+      model.set("direction", newDirection);
+  }
+
+  // Canvas context functions
+  function maybeDraw(model, ctx) {
+      return function(e) {
+        model.get("isDrawing") ? draw(model, ctx, e) : null;
+      }
+  }
+  
+  function draw(model, ctx, e) {
+      const lineTo = [e.offsetX, e.offsetY];
+
+      renderPath(ctx, model.get("hue"), model.get("direction"), model.get("lastXAndY"), lineTo);
+
+      toggleDirection(model, ctx);
+      incrementHue(model);
+      setLastXAndY(model, lineTo);
+  }
+
+  function renderPath(ctx, hue, shouldIncreaseWidth, moveTo, lineTo) {
+      ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+      shouldIncreaseWidth ? ctx.lineWidth++ : ctx.lineWidth--;
+      
+      ctx.beginPath();
+      ctx.moveTo(...moveTo);
+      ctx.lineTo(...lineTo);
+      ctx.stroke();
+  }
+
+  const [canvas, ctx] = initCanvasAndContext(document.querySelector("#draw"), window.innerWidth, window.innerHeight);
+  const model = initModel();
+
+  canvas.addEventListener("mousedown", enableDrawing(model));
+  canvas.addEventListener("mousemove", maybeDraw(model, ctx));
+  canvas.addEventListener("mouseup", () => disableDrawing(model));
+  canvas.addEventListener("mouseout", () => disableDrawing(model));
 </script>
 
 <style>
