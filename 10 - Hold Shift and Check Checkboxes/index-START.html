@@ -96,6 +96,110 @@
   </div>
 
 <script>
+  // Note: I implemented this under assumptions that seem different from those Wes Bos made. My different assumptions are as follows:
+  //  - If no box was ever checked, then the first time a user shift-clicks a checkbox, only that checkbox should be checked.
+  //  - If the user unchecks a box, and then shift-clicks an unchecked box (whether it's the same or a different box), only that checkbox should be checked.
+  function initModel(checkboxItems) {
+      const items = Array.from(checkboxItems);
+      const checkboxes = items.map(el => el.firstElementChild);
+
+      const model = new Map();
+
+      model.set("checkboxes", checkboxes); 
+      model.set("lastCheckedIndex", null);
+      model.set("isShiftKeyDown", false);
+      
+      return model;
+  }
+
+  function handleClick(model, index, element) {
+      if (isCheckbox(element) && model.get("isShiftKeyDown")) {
+          handleShiftClick(model, index, element);
+      }
+      else if (isCheckbox(element)) {
+          handleCheckboxClick(model, index, element);
+      }
+      else {
+          return null;
+      }
+  }
+
+  function isCheckbox(element) {
+      return element.type === "checkbox";
+  }
+
+  function handleShiftClick(model, index, element) {
+      isChecked(element) ? handleBulkSelect(model, index) : handleDeselect(model, index);
+  }
+
+  function handleCheckboxClick(model, index, element) {
+      isChecked(element) ? handleSelect(model, index) : handleDeselect(model, index);
+  }
+
+  function isChecked(checkbox) {
+      return checkbox.checked;
+  }
+
+  function handleSelect(model, index) {
+      setLastCheckedIndex(model, index);
+  }
+
+  function handleDeselect(model, index) {
+      setLastCheckedIndex(model, null);
+  }
+
+  function setLastCheckedIndex(model, index) {
+      model.set("lastCheckedIndex", index);
+  }
+
+  function handleBulkSelect(model, index) {
+      const lastCheckedIndex = model.get("lastCheckedIndex");
+      
+      if (typeof lastCheckedIndex === "number") {
+          bulkSetAsChecked(model, buildRange(lastCheckedIndex, index));
+          setLastCheckedIndex(model, index);
+      }
+      else {
+          handleSelect(model, index); 
+      } 
+  }
+
+  function bulkSetAsChecked(model, indices) {
+      const checkboxes = model.get("checkboxes");
+
+      checkboxes.forEach((checkbox, i) => {
+          (indices.includes(i) && !checkbox.checked) ? checkbox.click() : null;
+      });
+  }
+  
+  // Returns an array of integers that represents the range between two endpoints (inclusive)
+  function buildRange(n1, n2) {
+      return buildRangeHelper(Math.min(n1, n2), Math.max(n1, n2), []);
+  }
+
+  function buildRangeHelper(curr, end, acc) {
+      return (curr === end) ? acc.concat([end]) : buildRangeHelper(curr + 1, end, acc.concat([curr]));
+  }
+  
+  function toggleShift(model, isKeyDown) {
+      return function(event) {
+          const shiftKeyCode = 16;
+          event.keyCode == shiftKeyCode ? model.set("isShiftKeyDown", isKeyDown) : null;
+      }
+  }
+  
+  const items = document.querySelectorAll("div.item");
+  const m = initModel(items);
+  
+  items.forEach((el, index) => {
+      el.addEventListener("click", e => {
+          handleClick(m, index, e.target);
+      });
+  });
+
+  window.addEventListener("keydown", toggleShift(m, true)); 
+  window.addEventListener("keyup", toggleShift(m, false));
+  
 </script>
 </body>
 </html>
