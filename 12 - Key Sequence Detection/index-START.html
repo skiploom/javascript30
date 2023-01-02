@@ -7,6 +7,43 @@
 </head>
 <body>
 <script>
+  let sequence = [];
+
+  function maybeLogSequence(desiredSequence, sequence, key) {
+      return isValid(desiredSequence, sequence, key) ? sequence.concat([key]) : [];
+  }
+
+  function isValid(desiredSequence, sequence, key) {
+      const attempt = sequence.concat([key]);
+      const desiredSlice = desiredSequence.slice(0, attempt.length);
+
+      return matches(attempt, desiredSlice);
+  }
+
+  function matches(arr1, arr2) {
+      if (arr1.length === arr2.length) {
+          return arr1.reduce((acc, curr, i) => {return acc && (curr === arr2.at(i));}, true)
+      } else {
+          return false;
+      }
+  }
+
+  function konamiCode() {
+      return ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"];
+  }
+  
+  function maybeDoTheThing(desiredSequence, sequence) {
+      matches(sequence, desiredSequence) ? doTheThing() : null;
+  }
+
+  function doTheThing() {
+      cornify_add();
+  }
+  
+  window.addEventListener("keyup", (e) => {
+      sequence = maybeLogSequence(konamiCode(), sequence, e.key);
+      maybeDoTheThing(konamiCode(), sequence);
+  });
 </script>
 </body>
 </html>
